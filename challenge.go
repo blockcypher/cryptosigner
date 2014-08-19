@@ -2,6 +2,7 @@ package main
 
 import (
   "bytes"
+  "fmt"
 )
 
 const (
@@ -27,7 +28,13 @@ func (self *sigChallenge) Check(tosign []byte) bool {
   if len(tosign) < 25 { return false }
   decoded := base58Decode(self.address)
   // 4 last bytes of tx are the lock time, byte before is OP_CHECKSIG, address is right before that
-  return bytes.Compare(decoded[1:21], tosign[len(tosign)-6-20:len(tosign)-6]) == 0
+  // before are the address length, OP_DUP OP_HAS160 and the length of the script
+  output := tosign[len(tosign)-34:]
+  oneoutput := bytes.Compare([]byte{1, 0, 0, 0}, output[0:4]) == 0
+  checksig  := output[4] == 25 && output[5] == 118  && output[6] == 169 && output[7] == 20 &&
+                output[28] == 136 && output[29] == 172
+  addrmatch := bytes.Compare(output[8:28], decoded[1:21]) == 0
+  return oneoutput && addrmatch && checksig
 }
 
 func (self *sigChallenge) Bytes() []byte {
