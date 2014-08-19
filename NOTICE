@@ -1,0 +1,17 @@
+=========================================================================
+==  NOTICE file for use with the Apache License, Version 2.0,          ==
+==  in this case for BlockCypher's CryptoSigner.                       ==
+=========================================================================
+
+BlockCypher CryptoSigner
+This product includes software developed at BlockCypher (http://www.blockcypher.com).
+
+COPYRIGHT NOTICES
+
+This product includes software developed by Conformal and licensed under the
+copyfree license.
+https://github.com/conformal/btcec
+
+This product includes software developed by Google and licensed under the
+BSD license.
+https://code.google.com/p/go.crypto/ripemd160
