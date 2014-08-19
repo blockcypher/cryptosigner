@@ -3,8 +3,6 @@ package main
 import (
   "encoding/hex"
   "testing"
-
-  . "github.com/matthieu/dain/signer"
 )
 
 const (
