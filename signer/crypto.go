@@ -1,4 +1,4 @@
-package main
+package signer
 
 // ECDSA signer implementation as well as various crypto-related utility functions.
 
@@ -26,6 +26,11 @@ var (
   bigRadix = big.NewInt(58)
   bigZero = big.NewInt(0)
 )
+
+type Signer interface {
+  NewKey() (pub, priv []byte, err error)
+  Sign(private, data []byte) ([]byte, error)
+}
 
 type ECDSASigner struct {
 }

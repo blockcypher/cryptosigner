@@ -1,4 +1,4 @@
-package main
+package signer
 
 import (
   "bytes"
@@ -7,6 +7,11 @@ import (
 const (
   SIGNATURE_CHALLENGE = iota
 )
+
+type Challenge interface {
+  Check(tosign []byte) bool
+  Bytes() []byte
+}
 
 func ReadChallenge(data []byte) Challenge {
   if data[0] == SIGNATURE_CHALLENGE {

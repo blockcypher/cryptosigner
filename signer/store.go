@@ -1,4 +1,4 @@
-package main
+package signer
 
 import (
   "io/ioutil"
@@ -9,6 +9,12 @@ import (
 const (
   DIRNAME = ".store"
 )
+
+type Store interface {
+  Save(key string, data []byte) error
+  Delete(key string) error
+  ReadAll() ([][]byte, error)
+}
 
 // Saves key data in files under a given directory
 type FileStore struct {

@@ -1,4 +1,4 @@
-package main
+package signer
 
 import (
   "bytes"
@@ -8,6 +8,16 @@ import (
   "crypto/sha256"
   "encoding/hex"
 )
+
+type KeyHold interface {
+  // Creates and keeps a new key pair. Unlocking it to produce a signature will require that the data
+  // to sign pass the provided challenge.
+  NewKey(challenge Challenge, prefix byte) (addr string, err error)
+
+  // For a given source address and data that should pass the challenge provided when address keys were
+  // created, signs that data.
+  Sign(addr string, data []byte)
+}
 
 // Internal representation of the address, public key and private key trifecta. The private key
 // is still encrypted at this stage.
