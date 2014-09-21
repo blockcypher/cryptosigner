@@ -7,55 +7,64 @@ import (
   "strconv"
 )
 
-func StartServer(hold *Hold) {
-  http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-    if r.Method == "POST" {
-      err := r.ParseForm()
-      if err != nil { r400(w, "Invalid form data."); return }
+type SigningHandler struct {
+  hold *Hold
+}
 
-      switch r.URL.Path {
-      case "/transfer":
-        targetAddr  := r.FormValue("targetAddr")
-        prefixVal   := r.FormValue("prefix")
-        if len(targetAddr) == 0 { r400(w, "Missing target address for transfer."); return }
+func (self *SigningHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+  if r.Method == "POST" {
+    err := r.ParseForm()
+    if err != nil { r400(w, "Invalid form data."); return }
 
-        prefix := byte(0)
-        if len(prefixVal) > 0 {
-          preint, err := strconv.Atoi(prefixVal)
-          if err != nil { r400(w, "Invalid prefix."); return }
-          prefix = byte(preint)
-        }
+    switch r.URL.Path {
+    case "/transfer":
+      targetAddr  := r.FormValue("targetAddr")
+      prefixVal   := r.FormValue("prefix")
+      if len(targetAddr) == 0 { r400(w, "Missing target address for transfer."); return }
 
-        addr, err := hold.NewKey(NewSignatureChallenge(targetAddr), prefix)
-        if err != nil { r500(w, err); return }
-        log.Println("transfer |", addr, "->", targetAddr)
-        w.Write([]byte(addr))
-        return
+      prefix := byte(0)
+      if len(prefixVal) > 0 {
+        preint, err := strconv.Atoi(prefixVal)
+        if err != nil { r400(w, "Invalid prefix."); return }
+        prefix = byte(preint)
+      }
 
-      case "/sign":
-        sourceAddr  := r.FormValue("sourceAddr")
-        txDataStr   := r.FormValue("txData")
-        if len(sourceAddr) == 0 || len(txDataStr) == 0 {
-          r400(w, "Missing source address or tx data to sign.")
-          return
-        }
-        log.Println("sign     |", sourceAddr)
+      addr, err := self.hold.NewKey(NewSignatureChallenge(targetAddr), prefix)
+      if err != nil { r500(w, err); return }
+      log.Println("transfer |", addr, "->", targetAddr)
+      w.Write([]byte(addr))
+      return
 
-        txData, err := hex.DecodeString(txDataStr)
-        if err != nil { r400(w, "Bad hex encoding."); return }
-
-        sig, err := hold.Sign(sourceAddr, txData)
-        if err != nil { r500(w, err); return }
-        w.Write([]byte(hex.EncodeToString(sig)))
-        log.Println("sign     | ok")
+    case "/sign":
+      sourceAddr  := r.FormValue("sourceAddr")
+      txDataStr   := r.FormValue("txData")
+      if len(sourceAddr) == 0 || len(txDataStr) == 0 {
+        r400(w, "Missing source address or tx data to sign.")
         return
       }
+      log.Println("sign     |", sourceAddr)
+
+      txData, err := hex.DecodeString(txDataStr)
+      if err != nil { r400(w, "Bad hex encoding."); return }
+
+      sig, err := self.hold.Sign(sourceAddr, txData)
+      if err != nil { r500(w, err); return }
+      w.Write([]byte(hex.EncodeToString(sig)))
+      log.Println("sign     | ok")
+      return
     }
-    w.WriteHeader(404)
-  })
+  }
+  w.WriteHeader(404)
+}
+
+func StartServer(hold *Hold) {
+  httpServer  := &http.Server{
+      Addr    : ":8443",
+      Handler : &SigningHandler{hold},
+  }
 
   log.Println("Server started.")
-  log.Fatal(http.ListenAndServeTLS(":8443", "signer.crt", "signer.key", nil))
+  log.Fatal(httpServer.ListenAndServeTLS("signer.crt", "signer.key"))
 }
 
 func r400(w http.ResponseWriter, msg string) {
