@@ -66,6 +66,12 @@ func (self *ECDSASigner) Sign(private, data []byte) ([]byte, error) {
   return sig.Serialize(), nil
 }
 
+func pubKeyFromPrivate(private []byte) []byte {
+  _,pubkey := btcec.PrivKeyFromBytes(btcec.S256(), private)
+  pubkeyaddr  := &pubkey
+  return pubkeyaddr.SerializeCompressed()
+}
+
 func hash160(data []byte) []byte {
   if len(data) == 1 && data[0] == 0 {
     data = []byte{}

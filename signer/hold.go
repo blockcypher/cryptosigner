@@ -76,21 +76,24 @@ func (self *Hold) NewKey(challenge Challenge, prefix byte) (string, error) {
   return addr, self.store.Save(string(addr), newkey.bytes())
 }
 
-func (self *Hold) Sign(addr string, data []byte) ([]byte, error) {
+func (self *Hold) Sign(addr string, data []byte) ([]byte, []byte, error) {
   key   := self.keys[addr]
   if key == nil {
-    return nil, errors.New("Unknown address: " + addr)
+    return nil, nil, errors.New("Unknown address: " + addr)
   }
   if !key.challenge.Check(data) {
-    return nil, errors.New("challenge failed")
+    return nil, nil, errors.New("challenge failed")
   }
 
   priv, err  := decrypt(self.cipher, key.encryptedPrivate)
-  if err != nil { return nil, err }
+  if err != nil { return nil, nil, err }
+
+  pubkey := pubKeyFromPrivate(priv)
 
   // data passed is the digested tx bytes to sign, what we sign is the double-sha of that
   sigBytes := append(data, []byte{1, 0, 0, 0}...)
-  return self.signer.Sign(priv, doubleHash(sigBytes))
+  sig, err := self.signer.Sign(priv, doubleHash(sigBytes))
+  return sig, pubkey, err
 }
 
 func readKeyData(data [][]byte) map[string]*key {

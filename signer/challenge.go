@@ -33,11 +33,11 @@ func (self *sigChallenge) Check(tosign []byte) bool {
   decoded := base58Decode(self.address)
   // 4 last bytes of tx are the lock time, byte before is OP_CHECKSIG, address is right before that
   // before are the address length, OP_DUP OP_HAS160 and the length of the script
-  output := tosign[len(tosign)-34:]
-  oneoutput := bytes.Compare([]byte{1, 0, 0, 0}, output[0:4]) == 0
-  checksig  := output[4] == 25 && output[5] == 118  && output[6] == 169 && output[7] == 20 &&
-                output[28] == 136 && output[29] == 172
-  addrmatch := bytes.Compare(output[8:28], decoded[1:21]) == 0
+  output := tosign[len(tosign)-39:]
+  oneoutput := output[0] == 1
+  checksig  := output[9] == 25 && output[10] == 118  && output[11] == 169 && output[12] == 20 &&
+                output[33] == 136 && output[34] == 172
+  addrmatch := bytes.Compare(output[13:33], decoded[1:21]) == 0
   return oneoutput && addrmatch && checksig
 }
 

@@ -47,9 +47,9 @@ func (self *SigningHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
       txData, err := hex.DecodeString(txDataStr)
       if err != nil { r400(w, "Bad hex encoding."); return }
 
-      sig, err := self.hold.Sign(sourceAddr, txData)
+      sig, pubkey, err := self.hold.Sign(sourceAddr, txData)
       if err != nil { r500(w, err); return }
-      w.Write([]byte(hex.EncodeToString(sig)))
+      w.Write([]byte(hex.EncodeToString(sig)+"|"+hex.EncodeToString(pubkey)))
       log.Println("sign     | ok")
       return
     }
