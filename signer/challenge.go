@@ -31,14 +31,25 @@ func NewSignatureChallenge(address string) Challenge {
 func (self *sigChallenge) Check(tosign []byte) bool {
   if len(tosign) < 25 { return false }
   decoded := base58Decode(self.address)
-  // 4 last bytes of tx are the lock time, byte before is OP_CHECKSIG, address is right before that
-  // before are the address length, OP_DUP OP_HAS160 and the length of the script
-  output := tosign[len(tosign)-39:]
-  oneoutput := output[0] == 1
-  checksig  := output[9] == 25 && output[10] == 118  && output[11] == 169 && output[12] == 20 &&
-                output[33] == 136 && output[34] == 172
-  addrmatch := bytes.Compare(output[13:33], decoded[1:21]) == 0
-  return oneoutput && addrmatch && checksig
+  // pay-to-pubkey-hash
+  if tosign[len(tosign)-5] == 172 {
+    // 4 last bytes of tx are the lock time, byte before is OP_CHECKSIG, address is right before that
+    // before are the address length, OP_DUP OP_HAS160 and the length of the script
+    output := tosign[len(tosign)-39:]
+    oneoutput := output[0] == 1
+    checksig  := output[9] == 25 && output[10] == 118  && output[11] == 169 && output[12] == 20 &&
+                  output[33] == 136 && output[34] == 172
+    addrmatch := bytes.Compare(output[13:33], decoded[1:21]) == 0
+    return oneoutput && addrmatch && checksig
+
+  // pay-to-script-hash
+  } else if tosign[len(tosign)-27] == 169 {
+    output := tosign[len(tosign)-37:]
+    oneoutput := output[0] == 1
+    addrmatch := bytes.Compare(output[12:32], decoded[1:21]) == 0
+    return oneoutput && addrmatch
+  }
+  return false
 }
 
 func (self *sigChallenge) Bytes() []byte {
