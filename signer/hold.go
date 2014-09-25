@@ -2,11 +2,13 @@ package signer
 
 import (
   "bytes"
-  "errors"
   "crypto/aes"
   "crypto/cipher"
   "crypto/sha256"
   "encoding/hex"
+  "errors"
+  "log"
+  "sync"
 )
 
 type KeyHold interface {
@@ -46,10 +48,11 @@ func (self *key) bytes() []byte {
 // Holds the keys and handles their lifecycle. Decrypts the private key just for the time of
 // computing a signature.
 type Hold struct {
-  cipher  cipher.Block
-  store   Store
-  signer  Signer
-  keys    map[string]*key
+  cipher      cipher.Block
+  cipherlock  *sync.Mutex
+  store       Store
+  signer      Signer
+  keys        map[string]*key
 }
 
 func MakeHold(pass string, store Store, signer Signer) (*Hold, error) {
@@ -61,7 +64,7 @@ func MakeHold(pass string, store Store, signer Signer) (*Hold, error) {
   if err != nil { return nil, err }
 
   keys := readKeyData(data)
-  return &Hold{cipher, store, signer, keys}, nil
+  return &Hold{cipher, new(sync.Mutex), store, signer, keys}, nil
 }
 
 func (self *Hold) NewKey(challenge Challenge, prefix byte) (string, error) {
@@ -85,7 +88,13 @@ func (self *Hold) Sign(addr string, data []byte) ([]byte, []byte, error) {
     return nil, nil, errors.New("challenge failed")
   }
 
-  priv, err  := decrypt(self.cipher, key.encryptedPrivate)
+  self.cipherlock.Lock()
+  defer self.cipherlock.Unlock()
+
+  clone := make([]byte, len(key.encryptedPrivate))
+  copy(clone, key.encryptedPrivate)
+
+  priv, err  := decrypt(self.cipher, clone)
   if err != nil { return nil, nil, err }
 
   pubkey := pubKeyFromPrivate(priv)
@@ -100,6 +109,7 @@ func readKeyData(data [][]byte) map[string]*key {
   keys := make(map[string]*key)
   for _, kd := range data {
     key := readKey(kd)
+    log.Println("Loaded address", key.address)
     keys[key.address] = key
   }
   return keys
