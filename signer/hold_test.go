@@ -18,18 +18,18 @@ const (
 
 func TestSig(t *testing.T) {
   hold := testHold()
-  sig, err := testNewAndSign(t, hold, ADDR1, TX_DATA1)
+  sig, _, err := testNewAndSign(t, hold, ADDR1, TX_DATA1)
   if err != nil { t.Error(err) }
   if len(sig) < 50 { t.Error("Invalid sig.") }
 
-  sig, err = testNewAndSign(t, hold, ADDR2, TX_DATA2)
+  sig, _, err = testNewAndSign(t, hold, ADDR2, TX_DATA2)
   if err != nil { t.Error(err) }
   if len(sig) < 50 { t.Error("Invalid sig.") }
 }
 
 func TestSigFailChallenge(t *testing.T) {
   hold := testHold()
-  sig, err := testNewAndSign(t, hold, ADDR2, TX_DATA1)
+  sig, _, err := testNewAndSign(t, hold, ADDR2, TX_DATA1)
   if err == nil || sig != nil { t.Error("Challenge should have failed.") }
   if err.Error() != "challenge failed" { t.Error("Unexpected error.") }
 }
@@ -41,7 +41,7 @@ func testHold() *Hold {
   return hold
 }
 
-func testNewAndSign(t *testing.T, hold *Hold, targetAddr string, txhex string) ([]byte, error) {
+func testNewAndSign(t *testing.T, hold *Hold, targetAddr string, txhex string) ([]byte, []byte, error) {
   addr, err := hold.NewKey(NewSignatureChallenge(targetAddr), 0)
   if err != nil { t.Error(err) }
   txData,_  := hex.DecodeString(txhex)
