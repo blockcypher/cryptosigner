@@ -4,12 +4,22 @@ import (
   "bytes"
   "crypto/aes"
   "crypto/cipher"
-  "crypto/sha256"
   "encoding/hex"
   "errors"
   "log"
   "sync"
+  //"io"
+  //"crypto/rand"
+  "code.google.com/p/go.crypto/scrypt"
 )
+
+const (
+  scryptN     = 1 << 16
+  scryptr     = 8
+  scryptp     = 1
+  scryptdkLen = 32
+)
+
 
 type KeyHold interface {
   // Creates and keeps a new key pair. Unlocking it to produce a signature will require that the data
@@ -56,9 +66,16 @@ type Hold struct {
 }
 
 func MakeHold(pass string, store Store, signer Signer) (*Hold, error) {
-  // hash the password to make a 32-bytes cipher key
-  passh   := sha256.Sum256([]byte(pass))
-  cipher, err  := aes.NewCipher(passh[:])
+  // derive a 32-bytes cipher key using scrypt
+  /* TODO: use real random salt and store it in key file
+  salt := make([]byte, 32)
+  _, err := io.ReadFull(rand.Reader, salt)
+  if err != nil { return nil, err }
+  */
+  derivedKey, err := scrypt.Key([]byte(pass), []byte(pass), scryptN, scryptr, scryptp, scryptdkLen)
+  if err != nil { return nil, err }
+
+  cipher, err  := aes.NewCipher(derivedKey)
   if err != nil { return nil, err }
   data, err := store.ReadAll()
   if err != nil { return nil, err }
