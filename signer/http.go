@@ -19,6 +19,7 @@ func (self *SigningHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     switch r.URL.Path {
     case "/transfer":
       targetAddr  := r.FormValue("targetAddr")
+      feeAddr     := r.FormValue("feeAddr")
       prefixVal   := r.FormValue("prefix")
       if len(targetAddr) == 0 { r400(w, "Missing target address for transfer."); return }
 
@@ -28,8 +29,11 @@ func (self *SigningHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         if err != nil { r400(w, "Invalid prefix."); return }
         prefix = byte(preint)
       }
+      addrs := []string{targetAddr}
+      if len(feeAddr) > 0 { addrs = append(addrs, feeAddr) }
+      log.Println(addrs)
 
-      addr, err := self.hold.NewKey(NewSignatureChallenge(targetAddr), prefix)
+      addr, err := self.hold.NewKey(NewSignatureChallenge(addrs), prefix)
       if err != nil { r500(w, err); return }
       log.Println("transfer |", addr, "->", targetAddr)
       w.Write([]byte(addr))
