@@ -21,5 +21,6 @@ func main() {
   hold, err := MakeHold(pwd, store, signer)
   if err != nil { log.Println(err); return }
 
+  log.Println("Starting server")
   StartServer(hold)
 }

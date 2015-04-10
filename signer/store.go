@@ -2,6 +2,7 @@ package signer
 
 import (
   "io/ioutil"
+  "log"
   "os"
   "path"
 )
@@ -27,15 +28,19 @@ func MakeFileStore() (*FileStore, error) {
 }
 
 func (self *FileStore) ReadAll() ([][]byte, error) {
+  log.Println("reading dir")
   files, err := ioutil.ReadDir(DIRNAME)
   if err != nil { return nil, err }
   data := make([][]byte, 0, len(files))
-  for _, f := range files {
+  log.Println("going to scan files dir")
+  for n, f := range files {
     if f.IsDir() { continue }
+    if n % 1000 == 0 { log.Println(n) }
     content, err := ioutil.ReadFile(path.Join(DIRNAME, f.Name()))
     if err != nil { return nil, err }
     data = append(data, content)
   }
+  log.Println("done reading")
   return data, nil
 }
 
