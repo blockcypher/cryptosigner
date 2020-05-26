@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	. "github.com/blockcypher/cryptosigner/signer"
 	"log"
+
+	. "github.com/blockcypher/cryptosigner/signer"
 )
 
 func main() {
