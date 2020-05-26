@@ -13,8 +13,8 @@ import (
 	"io"
 	"math/big"
 
-	"code.google.com/p/go.crypto/ripemd160"
 	"github.com/btcsuite/btcd/btcec"
+	"golang.org/x/crypto/ripemd160"
 )
 
 const (
