@@ -11,7 +11,3 @@ COPYRIGHT NOTICES
 This product includes software developed by Conformal and licensed under the
 copyfree license.
 https://github.com/conformal/btcec
-
-This product includes software developed by Google and licensed under the
-BSD license.
-https://code.google.com/p/go.crypto/ripemd160

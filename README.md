@@ -1,3 +1,5 @@
+![Continuous Integration](https://github.com/blockcypher/cryptosigner/workflows/Continuous%20Integration/badge.svg)
+
 cryptosigner
 ============
 
