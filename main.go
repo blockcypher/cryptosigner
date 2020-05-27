@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	. "github.com/blockcypher/cryptosigner/signer"
+	"github.com/blockcypher/cryptosigner/signer"
+	"github.com/blockcypher/cryptosigner/util"
 )
 
 func main() {
@@ -15,19 +16,19 @@ func main() {
 		log.Fatal("Could not read.")
 	}
 
-	signer := &ECDSASigner{}
-	store, err := MakeFileStore()
+	ecdsaSigner := &util.ECDSASigner{}
+	store, err := signer.MakeFileStore()
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	hold, err := MakeHold(pwd, store, signer)
+	hold, err := signer.MakeHold(pwd, store, ecdsaSigner)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
 	log.Println("Starting server")
-	StartServer(hold)
+	signer.StartServer(hold)
 }

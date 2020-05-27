@@ -2,16 +2,18 @@ package signer
 
 import (
 	"encoding/hex"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 )
 
+// SigningHandler signing handler
 type SigningHandler struct {
 	hold *Hold
 }
 
-func (self *SigningHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (sh *SigningHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		err := r.ParseForm()
 		if err != nil {
@@ -21,9 +23,24 @@ func (self *SigningHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		switch r.URL.Path {
 		case "/transfer":
+			coinPrefix := r.FormValue("coinPrefix")
 			targetAddr := r.FormValue("targetAddr")
 			feeAddr := r.FormValue("feeAddr")
 			prefixVal := r.FormValue("prefix")
+			fmt.Println("targetAddr", targetAddr)
+			fmt.Println("feeAddr", feeAddr)
+			fmt.Println("prefixVal", prefixVal)
+
+			if len(coinPrefix) == 0 {
+				r400(w, "Missing coin prefix.")
+				return
+			}
+			coinFamily := CoinPrefixToCoinFamily(coinPrefix)
+			if coinFamily == UnknownCoinFamily {
+				r400(w, "Unknown coin family.")
+				return
+			}
+
 			if len(targetAddr) == 0 {
 				r400(w, "Missing target address for transfer.")
 				return
@@ -44,7 +61,7 @@ func (self *SigningHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 			log.Println(addrs)
 
-			addr, err := self.hold.NewKey(NewSignatureChallenge(addrs), prefix)
+			addr, err := sh.hold.NewKey(NewSignatureChallenge(addrs, coinFamily), prefix, coinFamily)
 			if err != nil {
 				r500(w, err)
 				return
@@ -68,7 +85,7 @@ func (self *SigningHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			sig, pubkey, err := self.hold.Sign(sourceAddr, txData)
+			sig, pubkey, err := sh.hold.Sign(sourceAddr, txData)
 			if err != nil {
 				r500(w, err)
 				return
@@ -81,6 +98,7 @@ func (self *SigningHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(404)
 }
 
+// StartServer starts the server
 func StartServer(hold *Hold) {
 	httpServer := &http.Server{
 		Addr:    ":8443",
