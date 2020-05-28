@@ -2,7 +2,6 @@ package signer
 
 import (
 	"encoding/hex"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -27,18 +26,15 @@ func (sh *SigningHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			targetAddr := r.FormValue("targetAddr")
 			feeAddr := r.FormValue("feeAddr")
 			prefixVal := r.FormValue("prefix")
-			fmt.Println("targetAddr", targetAddr)
-			fmt.Println("feeAddr", feeAddr)
-			fmt.Println("prefixVal", prefixVal)
 
 			if len(coinPrefix) == 0 {
 				r400(w, "Missing coin prefix.")
 				return
 			}
 			coinFamily := CoinPrefixToCoinFamily(coinPrefix)
+			// to maintain legacy support
 			if coinFamily == UnknownCoinFamily {
-				r400(w, "Unknown coin family.")
-				return
+				coinFamily = BitcoinFamily
 			}
 
 			if len(targetAddr) == 0 {
@@ -60,7 +56,6 @@ func (sh *SigningHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				addrs = append(addrs, feeAddr)
 			}
 			log.Println(addrs)
-
 			addr, err := sh.hold.NewKey(NewSignatureChallenge(addrs, coinFamily), prefix, coinFamily)
 			if err != nil {
 				r500(w, err)

@@ -7,7 +7,10 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"log"
+	"math/rand"
+	"strconv"
 	"sync"
 
 	"github.com/blockcypher/cryptosigner/signer/bitcoin"
@@ -42,7 +45,6 @@ type key struct {
 
 func readKey(data []byte) *key {
 	parts := bytes.Split(data, []byte{32}) // space
-
 	// check for old format
 	var k key
 	if len(parts) == 3 {
@@ -52,7 +54,8 @@ func readKey(data []byte) *key {
 		challng, _ := hex.DecodeString(string(parts[2]))
 		k.challenge = ReadChallenge(challng, k.coinFamily)
 	} else {
-		k.coinFamily = CoinFamily(data[0])
+		coinFamily, _ := strconv.Atoi(string(data[0]))
+		k.coinFamily = CoinFamily(uint8(coinFamily))
 		k.address = string(parts[1])
 		k.encryptedPrivate, _ = hex.DecodeString(string(parts[2]))
 		challng, _ := hex.DecodeString(string(parts[3]))
@@ -62,7 +65,10 @@ func readKey(data []byte) *key {
 }
 
 func (k *key) bytes() []byte {
-	data := bytes.NewBuffer([]byte(k.address))
+	data := new(bytes.Buffer)
+	data.WriteString(strconv.Itoa(int(k.coinFamily)))
+	data.WriteString(" ")
+	data.WriteString(k.address)
 	data.WriteString(" ")
 	data.WriteString(hex.EncodeToString(k.encryptedPrivate))
 	data.WriteString(" ")
@@ -108,9 +114,15 @@ func (h *Hold) NewKey(challenge Challenge, prefix byte, family CoinFamily) (stri
 	case BitcoinFamily:
 		addr = bitcoin.EncodeAddress(util.Hash160(pub), prefix)
 	case EthereumFamily:
+		n := 40
+		b := make([]byte, n)
+		if _, err := rand.Read(b); err != nil {
+			panic(err)
+		}
+		addr = fmt.Sprintf("%X", b)
 		// TODO
 	default:
-		errors.New("Unknown coin family")
+		return "", errors.New("Unknown coin family")
 	}
 
 	enc, err := util.Encrypt(h.cipher, priv)
@@ -159,7 +171,7 @@ func readKeyData(data [][]byte) map[string]*key {
 	keys := make(map[string]*key)
 	for _, kd := range data {
 		key := readKey(kd)
-		log.Println("Loaded address", key.address)
+		log.Println("Loaded address", key.address, "family", key.coinFamily)
 		keys[key.address] = key
 	}
 	return keys
