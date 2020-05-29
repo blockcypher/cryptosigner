@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/blockcypher/cryptosigner/signer/bitcoin"
+	"github.com/blockcypher/cryptosigner/signer/ethereum"
 )
 
 const (
@@ -43,32 +44,22 @@ func NewSignatureChallenge(addresses []string, coinFamily CoinFamily) Challenge 
 }
 
 // Check verify a signature challenge
-func (sC *sigChallenge) Check(tosign []byte) bool {
-	if len(tosign) < 25 {
+func (sC *sigChallenge) Check(toSign []byte) bool {
+	if len(toSign) < 25 {
 		return false
 	}
 
-	idx := len(tosign) - 5
-	for n := len(sC.addresses) - 1; n >= 0; n-- {
-		if tosign[idx] == 172 {
-			idx -= 34
-			output := tosign[idx:]
-			if !bitcoin.CheckP2PKOutput(sC.addresses[n], output) {
-				return false
-			}
-		} else if tosign[idx] == 135 && tosign[idx-22] == 169 {
-			idx -= 32
-			output := tosign[idx:]
-			if !bitcoin.CheckP2SHOutput(sC.addresses[n], output) {
-				return false
-			}
-		} else {
-			break
+	switch sC.coinFamily {
+	case BitcoinFamily:
+		if bitcoin.VerifyChallenge(sC.addresses, toSign) {
+			return true
 		}
-		if n == 0 && tosign[idx] == byte(len(sC.addresses)) {
+	case EthereumFamily:
+		if ethereum.VerifyChallenge(sC.addresses, toSign) {
 			return true
 		}
 	}
+
 	return false
 }
 

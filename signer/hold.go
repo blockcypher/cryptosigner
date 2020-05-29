@@ -7,14 +7,14 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"log"
-	"math/rand"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/blockcypher/cryptosigner/signer/bitcoin"
 	"github.com/blockcypher/cryptosigner/util"
+	"golang.org/x/crypto/sha3"
 )
 
 // Signer interface
@@ -114,13 +114,10 @@ func (h *Hold) NewKey(challenge Challenge, prefix byte, family CoinFamily) (stri
 	case BitcoinFamily:
 		addr = bitcoin.EncodeAddress(util.Hash160(pub), prefix)
 	case EthereumFamily:
-		n := 40
-		b := make([]byte, n)
-		if _, err := rand.Read(b); err != nil {
-			panic(err)
-		}
-		addr = fmt.Sprintf("%X", b)
-		// TODO
+		// Ethereum addresses are the last 20 bytes of the SHA3-256 of the pubkey
+		shaSum := sha3.Sum256(pub)
+		addrBytes := shaSum[0:20]
+		addr = strings.ToUpper(hex.EncodeToString(addrBytes))
 	default:
 		return "", errors.New("Unknown coin family")
 	}

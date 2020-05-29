@@ -37,6 +37,12 @@ func (sh *SigningHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				coinFamily = BitcoinFamily
 			}
 
+			// Ethereum does not have change addresses
+			if coinFamily == EthereumFamily && len(feeAddr) != 0 {
+				r400(w, "Invalid change address param for EthereumFamily")
+				return
+			}
+
 			if len(targetAddr) == 0 {
 				r400(w, "Missing target address for transfer.")
 				return

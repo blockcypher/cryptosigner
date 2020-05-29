@@ -35,8 +35,34 @@ func EncodeAddress(hash160 []byte, key byte) string {
 	return base58Encode(b)
 }
 
-// CheckP2PKOutput checks whether addr is in the output
-func CheckP2PKOutput(addr string, output []byte) bool {
+// VerifyChallenge verify that the transaction contains exactly the address specified
+func VerifyChallenge(addresses []string, toSign []byte) bool {
+	idx := len(toSign) - 5
+	for n := len(addresses) - 1; n >= 0; n-- {
+		if toSign[idx] == 172 {
+			idx -= 34
+			output := toSign[idx:]
+			if !checkP2PKOutput(addresses[n], output) {
+				return false
+			}
+		} else if toSign[idx] == 135 && toSign[idx-22] == 169 {
+			idx -= 32
+			output := toSign[idx:]
+			if !checkP2SHOutput(addresses[n], output) {
+				return false
+			}
+		} else {
+			break
+		}
+		if n == 0 && toSign[idx] == byte(len(addresses)) {
+			return true
+		}
+	}
+	return false
+}
+
+// checkP2PKOutput checks whether addr is in the output
+func checkP2PKOutput(addr string, output []byte) bool {
 	decoded := base58Decode(addr)
 	checksig := output[9] == 25 && output[10] == 118 && output[11] == 169 && output[12] == 20 &&
 		output[33] == 136 && output[34] == 172
@@ -44,8 +70,8 @@ func CheckP2PKOutput(addr string, output []byte) bool {
 	return addrmatch && checksig
 }
 
-// CheckP2SHOutput checks whether the addr in the output
-func CheckP2SHOutput(addr string, output []byte) bool {
+// checkP2SHOutput checks whether the addr in the output
+func checkP2SHOutput(addr string, output []byte) bool {
 	decoded := base58Decode(addr)
 	return bytes.Compare(output[12:32], decoded[1:21]) == 0
 }
