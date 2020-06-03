@@ -23,7 +23,7 @@ Before running, SSL certificate and key are expected to be found in the current 
 $ curl -k -d "targetAddr=15qx9ug952GWGTNn7Uiv6vode4RcGrRemh" https://localhost:8443/transfer
 1QHFuxSudUgnvPAf34CzBhWm9nG6g3DAGn
 
-$ curl -k -d "sourceAddr=1QHFuxSudUgnvPAf34CzBhWm9nG6g3DAGn&data=0100000..." https://localhost:8443/sign
+$ curl -k -d "sourceAddr=1QHFuxSudUgnvPAf34CzBhWm9nG6g3DAGn&txData=0100000..." https://localhost:8443/sign
 3045022100d52...
 ```
 

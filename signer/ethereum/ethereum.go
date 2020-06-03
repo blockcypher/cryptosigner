@@ -7,7 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
-// VerifyChallenge checks if the output contains the adress
+// VerifyChallenge checks if the output contains the address
 func VerifyChallenge(addresses []string, toSign []byte) bool {
 	var tx *types.Transaction
 	rlp.DecodeBytes(toSign, &tx)
@@ -17,6 +17,6 @@ func VerifyChallenge(addresses []string, toSign []byte) bool {
 	}
 
 	// remove the 0x
-	toAddress := strings.ToUpper(tx.To().Hex()[2:])
+	toAddress := strings.ToLower(tx.To().Hex()[2:])
 	return addresses[0] == toAddress
 }

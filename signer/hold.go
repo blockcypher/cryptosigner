@@ -117,7 +117,7 @@ func (h *Hold) NewKey(challenge Challenge, prefix byte, family CoinFamily) (stri
 		// Ethereum addresses are the last 20 bytes of the SHA3-256 of the pubkey
 		shaSum := sha3.Sum256(pub)
 		addrBytes := shaSum[0:20]
-		addr = strings.ToUpper(hex.EncodeToString(addrBytes))
+		addr = strings.ToLower(hex.EncodeToString(addrBytes))
 	default:
 		return "", errors.New("Unknown coin family")
 	}
