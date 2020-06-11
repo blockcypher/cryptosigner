@@ -1,5 +1,7 @@
 package signer
 
+import "strings"
+
 // CoinFamily is an enum to describe the family of coin
 type CoinFamily uint8
 
@@ -14,10 +16,10 @@ const (
 
 // CoinPrefixToCoinFamily convert a coin family to a prefix
 func CoinPrefixToCoinFamily(coinPrefix string) CoinFamily {
-	switch coinPrefix {
+	switch strings.ToLower(coinPrefix) {
 	case "btc", "ltc", "doge":
 		return BitcoinFamily
-	case "eth":
+	case "eth", "beth":
 		return EthereumFamily
 	default:
 		return UnknownCoinFamily
