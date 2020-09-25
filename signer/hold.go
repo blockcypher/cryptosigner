@@ -191,7 +191,7 @@ func (h *Hold) Sign(addr string, data []byte) ([]byte, []byte, error) {
 		sts := types.Transactions{stx}
 		rawTx := hex.EncodeToString(sts.GetRlp(0))
 		fmt.Println("rawtx", rawTx)
-		msg, err := tx.AsMessage(types.NewEIP155Signer(tx.ChainId()))
+		msg, err := stx.AsMessage(types.NewEIP155Signer(stx.ChainId()))
 		if err != nil {
 			log.Fatal(err)
 		}
