@@ -181,8 +181,9 @@ func (h *Hold) Sign(addr string, data []byte) ([]byte, []byte, error) {
 		}
 		config := params.MainnetChainConfig
 		s := types.MakeSigner(config, config.EIP158Block)
-		h := s.Hash(tx)
-		sig, err := crypto.Sign(h[:], epriv)
+		hash := s.Hash(tx)
+		sig, err := h.signer.Sign(priv, hash[:])
+		//sig, err := crypto.Sign(h[:], epriv)
 		return sig, pubkey, err
 
 		//sigBytes :=
