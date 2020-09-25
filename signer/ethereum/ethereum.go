@@ -1,6 +1,7 @@
 package ethereum
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/core/types"
@@ -10,7 +11,10 @@ import (
 // VerifyChallenge checks if the output contains the address
 func VerifyChallenge(addresses []string, toSign []byte) bool {
 	var tx *types.Transaction
-	rlp.DecodeBytes(toSign, &tx)
+	if err := rlp.DecodeBytes(toSign, &tx); err != nil {
+		fmt.Println(err)
+		return false
+	}
 	if len(addresses) != 1 {
 		// something wrong there is no change for Ethereum
 		return false
