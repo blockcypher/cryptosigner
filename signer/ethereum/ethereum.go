@@ -17,6 +17,9 @@ func VerifyChallenge(addresses []string, toSign []byte) bool {
 		return false
 	}
 	spew.Dump(tx)
+	msg, _ := tx.AsMessage(types.NewEIP155Signer(tx.ChainId()))
+	fmt.Println("sender is", msg.From().Hex())
+
 	if len(addresses) != 1 {
 		// something wrong there is no change for Ethereum
 		return false
