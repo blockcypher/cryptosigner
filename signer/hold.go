@@ -7,7 +7,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -186,7 +185,6 @@ func (h *Hold) Sign(addr string, data []byte) ([]byte, []byte, error) {
 		config := params.MainnetChainConfig
 		s := types.MakeSigner(config, config.EIP158Block)
 		h := s.Hash(tx)
-		fmt.Println("owner address", crypto.PubkeyToAddress(epriv.PublicKey).String())
 		sig, err := crypto.Sign(h[:], epriv)
 		return sig, pubkey, err
 

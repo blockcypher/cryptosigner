@@ -1,7 +1,6 @@
 package ethereum
 
 import (
-	"encoding/hex"
 	"fmt"
 	"strings"
 
@@ -12,7 +11,6 @@ import (
 // VerifyChallenge checks if the output contains the address
 func VerifyChallenge(addresses []string, toSign []byte) bool {
 	var tx *types.Transaction
-	fmt.Println("challenge", hex.EncodeToString(toSign))
 	if err := rlp.DecodeBytes(toSign, &tx); err != nil {
 		fmt.Println(err)
 		return false
