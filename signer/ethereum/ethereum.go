@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
 )
@@ -15,6 +16,7 @@ func VerifyChallenge(addresses []string, toSign []byte) bool {
 		fmt.Println(err)
 		return false
 	}
+	spew.Dump(tx)
 	if len(addresses) != 1 {
 		// something wrong there is no change for Ethereum
 		return false
