@@ -7,9 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"log"
-	"math/big"
 	"strconv"
 	"strings"
 	"sync"
@@ -182,23 +180,9 @@ func (h *Hold) Sign(addr string, data []byte) ([]byte, []byte, error) {
 			return nil, nil, errors.New("Invalid private key")
 		}
 		config := params.MainnetChainConfig
-		s := types.MakeSigner(config, big.NewInt(10934260))
-		hash := s.Hash(tx)
-		stx, err := types.SignTx(tx, s, epriv)
-		if err != nil {
-			fmt.Println("sign tx error")
-		}
-		sts := types.Transactions{stx}
-		rawTx := hex.EncodeToString(sts.GetRlp(0))
-		fmt.Println("rawtx", rawTx)
-		msg, err := stx.AsMessage(types.NewEIP155Signer(stx.ChainId()))
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Println("from:", msg.From().Hex())
-		sig, err := h.signer.Sign(priv, hash[:])
-		//sig, err := crypto.Sign(h[:], epriv)
+		s := types.MakeSigner(config, config.EIP158Block)
+		h := s.Hash(tx)
+		sig, err := crypto.Sign(h[:], epriv)
 		return sig, pubkey, err
 
 		//sigBytes :=
