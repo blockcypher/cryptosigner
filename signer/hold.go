@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/big"
 	"strconv"
 	"strings"
 	"sync"
@@ -181,7 +182,7 @@ func (h *Hold) Sign(addr string, data []byte) ([]byte, []byte, error) {
 			return nil, nil, errors.New("Invalid private key")
 		}
 		config := params.MainnetChainConfig
-		s := types.MakeSigner(config, config.EIP158Block)
+		s := types.MakeSigner(config, big.NewInt(10934260))
 		hash := s.Hash(tx)
 		stx, err := types.SignTx(tx, s, epriv)
 		if err != nil {
