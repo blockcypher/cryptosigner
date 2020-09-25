@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -182,6 +183,16 @@ func (h *Hold) Sign(addr string, data []byte) ([]byte, []byte, error) {
 		config := params.MainnetChainConfig
 		s := types.MakeSigner(config, config.EIP158Block)
 		hash := s.Hash(tx)
+		stx, err := types.SignTx(tx, s, epriv)
+		sts := types.Transactions{stx}
+		rawTx := hex.EncodeToString(sts.GetRlp(0))
+		fmt.Println("rawtx", rawTx)
+		msg, err := tx.AsMessage(types.NewEIP155Signer(tx.ChainId()))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println("from:", msg.From().Hex())
 		sig, err := h.signer.Sign(priv, hash[:])
 		//sig, err := crypto.Sign(h[:], epriv)
 		return sig, pubkey, err
