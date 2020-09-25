@@ -1,10 +1,10 @@
 package ethereum
 
 import (
+	"encoding/hex"
 	"fmt"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
 )
@@ -12,13 +12,11 @@ import (
 // VerifyChallenge checks if the output contains the address
 func VerifyChallenge(addresses []string, toSign []byte) bool {
 	var tx *types.Transaction
+	fmt.Println("challenge", hex.EncodeToString(toSign))
 	if err := rlp.DecodeBytes(toSign, &tx); err != nil {
 		fmt.Println(err)
 		return false
 	}
-	spew.Dump(tx)
-	msg, _ := tx.AsMessage(types.NewEIP155Signer(tx.ChainId()))
-	fmt.Println("sender is", msg.From().Hex())
 
 	if len(addresses) != 1 {
 		// something wrong there is no change for Ethereum
