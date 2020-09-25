@@ -14,6 +14,10 @@ import (
 
 	"github.com/blockcypher/cryptosigner/signer/bitcoin"
 	"github.com/blockcypher/cryptosigner/util"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/params"
+	"github.com/ethereum/go-ethereum/rlp"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -158,10 +162,34 @@ func (h *Hold) Sign(addr string, data []byte) ([]byte, []byte, error) {
 
 	pubkey := util.PubKeyFromPrivate(priv)
 
-	// data passed is the digested tx bytes to sign, what we sign is the double-sha of that
-	sigBytes := append(data, []byte{1, 0, 0, 0}...)
-	sig, err := h.signer.Sign(priv, util.DoubleHash(sigBytes))
-	return sig, pubkey, err
+	switch key.coinFamily {
+	case BitcoinFamily:
+		// data passed is the digested tx bytes to sign, what we sign is the double-sha of that
+		sigBytes := append(data, []byte{1, 0, 0, 0}...)
+		sig, err := h.signer.Sign(priv, util.DoubleHash(sigBytes))
+		return sig, pubkey, err
+	case EthereumFamily:
+		var tx *types.Transaction
+		if err := rlp.DecodeBytes(data, &tx); err != nil {
+			return nil, nil, err
+		}
+		epriv, err := crypto.ToECDSA(priv)
+		if err != nil {
+			return nil, nil, err
+		} else if epriv == nil {
+			return nil, nil, errors.New("Invalid private key")
+		}
+		config := params.MainnetChainConfig
+		s := types.MakeSigner(config, config.EIP158Block)
+		h := s.Hash(tx)
+		sig, err := crypto.Sign(h[:], epriv)
+		return sig, pubkey, err
+
+		//sigBytes :=
+	default:
+		return nil, nil, errors.New("Unknown coin family")
+	}
+
 }
 
 func readKeyData(data [][]byte) map[string]*key {
