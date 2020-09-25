@@ -184,6 +184,9 @@ func (h *Hold) Sign(addr string, data []byte) ([]byte, []byte, error) {
 		s := types.MakeSigner(config, config.EIP158Block)
 		hash := s.Hash(tx)
 		stx, err := types.SignTx(tx, s, epriv)
+		if err != nil {
+			fmt.Println("sign tx error")
+		}
 		sts := types.Transactions{stx}
 		rawTx := hex.EncodeToString(sts.GetRlp(0))
 		fmt.Println("rawtx", rawTx)
