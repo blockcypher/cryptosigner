@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/blockcypher/cryptosigner/signer/bitcoin"
@@ -124,7 +125,7 @@ func (h *Hold) NewKey(challenge Challenge, prefix byte, family CoinFamily) (stri
 		} else if epriv == nil {
 			return "", errors.New("Invalid private key")
 		}
-		addr = crypto.PubkeyToAddress(epriv.PublicKey).String()
+		addr = strings.ToLower(crypto.PubkeyToAddress(epriv.PublicKey).String()[2:])
 	default:
 		return "", errors.New("Unknown coin family")
 	}
