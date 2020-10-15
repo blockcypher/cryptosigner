@@ -51,15 +51,10 @@ func (sC *sigChallenge) Check(toSign []byte) bool {
 
 	switch sC.coinFamily {
 	case BitcoinFamily:
-		if bitcoin.VerifyChallenge(sC.addresses, toSign) {
-			return true
-		}
+		return bitcoin.VerifyChallenge(sC.addresses, toSign)
 	case EthereumFamily:
-		if ethereum.VerifyChallenge(sC.addresses, toSign) {
-			return true
-		}
+		return ethereum.VerifyChallenge(sC.addresses, toSign)
 	}
-
 	return false
 }
 

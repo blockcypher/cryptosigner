@@ -187,8 +187,6 @@ func (h *Hold) Sign(addr string, data []byte) ([]byte, []byte, error) {
 		h := s.Hash(tx)
 		sig, err := crypto.Sign(h[:], epriv)
 		return sig, pubkey, err
-
-		//sigBytes :=
 	default:
 		return nil, nil, errors.New("Unknown coin family")
 	}
