@@ -17,7 +17,7 @@ const (
 // CoinPrefixToCoinFamily convert a coin family to a prefix
 func CoinPrefixToCoinFamily(coinPrefix string) CoinFamily {
 	switch strings.ToLower(coinPrefix) {
-	case "btc", "ltc", "doge":
+	case "btc", "ltc", "doge", "dash":
 		return BitcoinFamily
 	case "eth", "beth":
 		return EthereumFamily
