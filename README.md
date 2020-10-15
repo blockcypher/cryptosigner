@@ -28,7 +28,7 @@ $ curl -k -d "sourceAddr=1QHFuxSudUgnvPAf34CzBhWm9nG6g3DAGn&txData=0100000..." h
 ```
 
 Each HTTP endpoint expects the data to be form-encoded. Binary data in inputs and outputs is hex-encoded.
-`coinPrefix` can be `btc/ltc/doge/eth/beth` (beth is BlockCypher internal Ethereum testnet). If `coinPrefix` is missing, the signer will consider the coinPrefix is `btc`.
+`coinPrefix` can be `btc/ltc/doge/eth/beth` (`beth` is BlockCypher internal Ethereum testnet). If the `coinPrefix` is missing, the signer will consider that the coinPrefix is `btc`.
 
 ## Security
 
