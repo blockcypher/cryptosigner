@@ -27,10 +27,6 @@ func (sh *SigningHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			feeAddr := r.FormValue("feeAddr")
 			prefixVal := r.FormValue("prefix")
 
-			if len(coinPrefix) == 0 {
-				r400(w, "Missing coin prefix.")
-				return
-			}
 			coinFamily := CoinPrefixToCoinFamily(coinPrefix)
 			// to maintain legacy support
 			if coinFamily == UnknownCoinFamily {
