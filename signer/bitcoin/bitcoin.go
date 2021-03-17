@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"math/big"
 
+	"github.com/btcsuite/btcutil/bech32"
+
 	"github.com/blockcypher/cryptosigner/util"
 )
 
@@ -51,6 +53,18 @@ func VerifyChallenge(addresses []string, toSign []byte) bool {
 			if !checkP2SHOutput(addresses[n], output) {
 				return false
 			}
+		} else if toSign[idx-21] == 0 && toSign[idx-20] == 20 {
+			idx -= 28
+			output := toSign[idx:]
+			if !checkP2WPKHOutput(addresses[n], output) {
+				return false
+			}
+		} else if toSign[idx-33] == 0 && toSign[idx-32] == 32 {
+			idx -= 40
+			output := toSign[idx:]
+			if !checkP2WSHOutput(addresses[n], output) {
+				return false
+			}
 		} else {
 			break
 		}
@@ -74,6 +88,22 @@ func checkP2PKOutput(addr string, output []byte) bool {
 func checkP2SHOutput(addr string, output []byte) bool {
 	decoded := base58Decode(addr)
 	return bytes.Compare(output[12:32], decoded[1:21]) == 0
+}
+
+func checkP2WPKHOutput(addr string, output []byte) bool {
+	_, decoded, err := fromBech32Addr(addr)
+	if err != nil {
+		return false
+	}
+	return bytes.Compare(output[9:29], decoded) == 0
+}
+
+func checkP2WSHOutput(addr string, output []byte) bool {
+	_, decoded, err := fromBech32Addr(addr)
+	if err != nil {
+		return false
+	}
+	return bytes.Compare(output[9:41], decoded) == 0
 }
 
 func base58Decode(b string) []byte {
@@ -169,4 +199,17 @@ func base58Encode(b []byte) string {
 	}
 
 	return string(answer)
+}
+
+func fromBech32Addr(addr string) (string, []byte, error) {
+	hrp, decoded, err := bech32.Decode(addr)
+	if err != nil {
+		return "", nil, err
+	}
+	// strip version
+	conv, err := bech32.ConvertBits(decoded[1:], 5, 8, false)
+	if err != nil {
+		return "", nil, err
+	}
+	return hrp, conv, nil
 }
