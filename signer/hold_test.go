@@ -2,6 +2,7 @@ package signer
 
 import (
 	"encoding/hex"
+	"fmt"
 	"testing"
 
 	"github.com/blockcypher/cryptosigner/util"
@@ -43,9 +44,15 @@ const (
 	TxData2 = "0100000001000000000000000000000000000000000000000000000000000000000000000000000000" +
 		"1976a914a78ddeb84ba308abb780429d1bcdebce20a153fb88ac000000000100f2052a010000001976" +
 		"a914a78ddeb84ba308abb780429d1bcdebce20a153fb88ac00000000"
+	ADDR3   = "bc1qumnwpsyz0sresdl6yv4e7qlrg6nq0uy5vvdtrw"
+	TxData3 = "0100000001f26efab8144d394209a4369de8082a3e6b55c28e067270c4add9e92c296411ba01000000" +
+		"1976a9145dc74f0505b74972666dfc198378116c5690c88f88acffffffff" +
+		"0174b601000000000016" +
+		"0014e6e6e0c0827c079837fa232b9f03e346a607f09400000000"
 )
 
 func TestSig(t *testing.T) {
+	fmt.Println("-----------------------")
 	hold := testHold()
 	sig, _, err := testNewAndSign(t, hold, ADDR1, TxData1)
 	if err != nil {
@@ -72,6 +79,17 @@ func TestSigFailChallenge(t *testing.T) {
 	}
 	if err.Error() != "challenge failed" {
 		t.Error("Unexpected error.")
+	}
+}
+
+func TestSigBech32(t *testing.T) {
+	hold := testHold()
+	sig, _, err := testNewAndSign(t, hold, ADDR3, TxData3)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(sig) < 50 {
+		t.Error("Invalid sig.")
 	}
 }
 
