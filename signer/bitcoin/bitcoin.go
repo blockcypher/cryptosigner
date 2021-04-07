@@ -54,13 +54,13 @@ func VerifyChallenge(addresses []string, toSign []byte) bool {
 				return false
 			}
 		} else if toSign[idx-21] == 0 && toSign[idx-20] == 20 {
-			idx -= 28
+			idx -= 31
 			output := toSign[idx:]
 			if !checkP2WPKHOutput(addresses[n], output) {
 				return false
 			}
 		} else if toSign[idx-33] == 0 && toSign[idx-32] == 32 {
-			idx -= 40
+			idx -= 43
 			output := toSign[idx:]
 			if !checkP2WSHOutput(addresses[n], output) {
 				return false
@@ -95,7 +95,7 @@ func checkP2WPKHOutput(addr string, output []byte) bool {
 	if err != nil {
 		return false
 	}
-	return bytes.Compare(output[9:29], decoded) == 0
+	return bytes.Compare(output[12:32], decoded) == 0
 }
 
 func checkP2WSHOutput(addr string, output []byte) bool {
@@ -103,7 +103,7 @@ func checkP2WSHOutput(addr string, output []byte) bool {
 	if err != nil {
 		return false
 	}
-	return bytes.Compare(output[9:41], decoded) == 0
+	return bytes.Compare(output[12:44], decoded) == 0
 }
 
 func base58Decode(b string) []byte {

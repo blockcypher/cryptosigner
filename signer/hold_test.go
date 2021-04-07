@@ -49,6 +49,11 @@ const (
 		"1976a9145dc74f0505b74972666dfc198378116c5690c88f88acffffffff" +
 		"0174b601000000000016" +
 		"0014e6e6e0c0827c079837fa232b9f03e346a607f09400000000"
+	ADDR4   = "bc1qumnwpsyz0sresdl6yv4e7qlrg6nq0uy5vvdtrw"
+	TxData4 = "0100000001d7c49537b0fa277701df8438ee845ff511132b4d9e7f95c7ca67782d701a285e0d000000" +
+		"1976a9142425082fa769c0b853059fdab67d32c8c204c14c88acffffffff" +
+		"01641400000000000016" +
+		"0014e6e6e0c0827c079837fa232b9f03e346a607f09400000000"
 )
 
 func TestSig(t *testing.T) {
@@ -85,6 +90,17 @@ func TestSigFailChallenge(t *testing.T) {
 func TestSigBech32(t *testing.T) {
 	hold := testHold()
 	sig, _, err := testNewAndSign(t, hold, ADDR3, TxData3)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(sig) < 50 {
+		t.Error("Invalid sig.")
+	}
+}
+
+func TestSigBech322(t *testing.T) {
+	hold := testHold()
+	sig, _, err := testNewAndSign(t, hold, ADDR4, TxData4)
 	if err != nil {
 		t.Error(err)
 	}
