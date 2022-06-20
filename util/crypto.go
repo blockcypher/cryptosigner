@@ -5,14 +5,15 @@ package util
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/ecdsa"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"io"
 
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2/ecdsa"
+
+	"github.com/btcsuite/btcd/btcec/v2"
 	"golang.org/x/crypto/ripemd160"
 )
 
@@ -21,28 +22,28 @@ type ECDSASigner struct{}
 
 // NewKey Generates a new keypair
 func (eS *ECDSASigner) NewKey() ([]byte, []byte, error) {
-	priv, err := ecdsa.GenerateKey(btcec.S256(), rand.Reader)
+	priv, err := btcec.NewPrivateKey()
 	if err != nil {
 		return nil, nil, err
 	}
-	pubkey := btcec.PublicKey(priv.PublicKey)
-	pubkeyaddr := &pubkey
-	return pubkeyaddr.SerializeCompressed(), priv.D.Bytes(), nil
+	pubkey := priv.PubKey()
+	return pubkey.SerializeCompressed(), priv.ToECDSA().D.Bytes(), nil
 }
 
 // Sign data with a private key
 func (eS *ECDSASigner) Sign(private, data []byte) ([]byte, error) {
-	privkey, _ := btcec.PrivKeyFromBytes(btcec.S256(), private)
-	sig, err := privkey.Sign(data)
-	if err != nil {
-		return nil, err
+	privkey, _ := btcec.PrivKeyFromBytes(private)
+
+	sig := ecdsa.Sign(privkey, data)
+	if sig == nil {
+		return nil, errors.New("could not sign data")
 	}
 	return sig.Serialize(), nil
 }
 
 // PubKeyFromPrivate retrieve public key from a private key
 func PubKeyFromPrivate(private []byte) []byte {
-	_, pubkey := btcec.PrivKeyFromBytes(btcec.S256(), private)
+	_, pubkey := btcec.PrivKeyFromBytes(private)
 	//pubkeyaddr  := &pubkey
 	return pubkey.SerializeCompressed()
 }
