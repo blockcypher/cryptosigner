@@ -2,6 +2,7 @@ package bitcoin
 
 import (
 	"bytes"
+	"log"
 	"math/big"
 
 	"github.com/btcsuite/btcutil/bech32"
@@ -39,30 +40,41 @@ func EncodeAddress(hash160 []byte, key byte) string {
 
 // VerifyChallenge verify that the transaction contains exactly the address specified
 func VerifyChallenge(addresses []string, toSign []byte) bool {
+	log.Println("Verify challenge for", addresses)
 	idx := len(toSign) - 5
 	for n := len(addresses) - 1; n >= 0; n-- {
+		log.Println("idx", idx)
+		log.Println("toSign[idx]", toSign[idx])
 		if toSign[idx] == 172 {
 			idx -= 34
 			output := toSign[idx:]
+			log.Println("checkP2PKOutput", addresses[n], output)
 			if !checkP2PKOutput(addresses[n], output) {
+				log.Println("checkP2PKOutput failed")
 				return false
 			}
 		} else if toSign[idx] == 135 && toSign[idx-22] == 169 {
 			idx -= 32
 			output := toSign[idx:]
 			if !checkP2SHOutput(addresses[n], output) {
+				log.Println("checkP2SHOutput failed")
+
 				return false
 			}
 		} else if toSign[idx-21] == 0 && toSign[idx-20] == 20 {
 			idx -= 31
 			output := toSign[idx:]
 			if !checkP2WPKHOutput(addresses[n], output) {
+				log.Println("checkP2WPKHOutput failed")
+
 				return false
 			}
 		} else if toSign[idx-33] == 0 && toSign[idx-32] == 32 {
 			idx -= 43
 			output := toSign[idx:]
 			if !checkP2WSHOutput(addresses[n], output) {
+				log.Println("checkP2WSHOutput failed")
+
 				return false
 			}
 		} else {
@@ -78,6 +90,7 @@ func VerifyChallenge(addresses []string, toSign []byte) bool {
 // checkP2PKOutput checks whether addr is in the output
 func checkP2PKOutput(addr string, output []byte) bool {
 	decoded := base58Decode(addr)
+	log.Println(decoded)
 	checksig := output[9] == 25 && output[10] == 118 && output[11] == 169 && output[12] == 20 &&
 		output[33] == 136 && output[34] == 172
 	addrmatch := bytes.Compare(output[13:33], decoded[1:21]) == 0
