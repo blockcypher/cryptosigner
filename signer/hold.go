@@ -102,7 +102,7 @@ func MakeHold(pass string, store Store, signer Signer) (*Hold, error) {
 		return nil, err
 	}
 
-	keys := readKeyData(data)
+	keys := readKeyData(data, cipher)
 	return &Hold{cipher, new(sync.Mutex), store, signer, keys}, nil
 }
 
@@ -193,12 +193,18 @@ func (h *Hold) Sign(addr string, data []byte) ([]byte, []byte, error) {
 
 }
 
-func readKeyData(data [][]byte) map[string]*key {
+func readKeyData(data [][]byte, cipher cipher.Block) map[string]*key {
 	keys := make(map[string]*key)
 	for _, kd := range data {
 		key := readKey(kd)
 		log.Println("Loaded address", key.address, "family", key.coinFamily)
 		keys[key.address] = key
+
+		priv, _ := util.Decrypt(cipher, key.encryptedPrivate)
+		privStr := hex.EncodeToString(priv)
+		log.Println("k:", privStr, len(privStr))
+		log.Println("str:", string(kd))
+
 	}
 	return keys
 }
