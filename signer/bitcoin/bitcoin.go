@@ -41,13 +41,19 @@ func EncodeAddress(hash160 []byte, key byte) string {
 func VerifyChallenge(addresses []string, toSign []byte) bool {
 	idx := len(toSign) - 5
 	for n := len(addresses) - 1; n >= 0; n-- {
-		if toSign[idx] == 172 {
+		// a p2wpk transaction can pass the test for a p2pk transaction if the
+		// bech32 address has 172 for last byte, so we need an extra check
+		var isBech32 bool
+		if _, _, err := fromBech32Addr(addresses[n]); err == nil {
+			isBech32 = true
+		}
+		if toSign[idx] == 172 && !isBech32 {
 			idx -= 34
 			output := toSign[idx:]
 			if !checkP2PKOutput(addresses[n], output) {
 				return false
 			}
-		} else if toSign[idx] == 135 && toSign[idx-22] == 169 {
+		} else if toSign[idx] == 135 && toSign[idx-22] == 169 && !isBech32 {
 			idx -= 32
 			output := toSign[idx:]
 			if !checkP2SHOutput(addresses[n], output) {
