@@ -3,7 +3,6 @@ package bitcoin
 import (
 	"bytes"
 	"math/big"
-	"strings"
 
 	"github.com/btcsuite/btcutil/bech32"
 
@@ -42,14 +41,13 @@ func EncodeAddress(hash160 []byte, key byte) string {
 func VerifyChallenge(addresses []string, toSign []byte) bool {
 	idx := len(toSign) - 5
 	for n := len(addresses) - 1; n >= 0; n-- {
-		isSegwitAddr := strings.HasPrefix(addresses[n], "bc1")
-		if toSign[idx] == 172 && !isSegwitAddr {
+		if toSign[idx] == 172 {
 			idx -= 34
 			output := toSign[idx:]
 			if !checkP2PKOutput(addresses[n], output) {
 				return false
 			}
-		} else if toSign[idx] == 135 && toSign[idx-22] == 169 && !isSegwitAddr {
+		} else if toSign[idx] == 135 && toSign[idx-22] == 169 {
 			idx -= 32
 			output := toSign[idx:]
 			if !checkP2SHOutput(addresses[n], output) {
